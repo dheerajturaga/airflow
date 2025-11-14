@@ -18,4 +18,5 @@
  */
 
 export { autoRefreshInterval } from "./config";
+export { getMetaKey } from "./getMetaKey";
 export { useContainerWidth } from "./useContainerWidth";
