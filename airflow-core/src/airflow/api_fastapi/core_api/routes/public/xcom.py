@@ -338,3 +338,45 @@ def update_xcom_entry(
     xcom_entry.value = XComModel.serialize_value(xcom_new_value)
 
     return XComResponseNative.model_validate(xcom_entry)
+
+
+@xcom_router.delete(
+    "/{xcom_key}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    responses=create_openapi_http_exception_doc(
+        [
+            status.HTTP_400_BAD_REQUEST,
+            status.HTTP_404_NOT_FOUND,
+        ]
+    ),
+    dependencies=[
+        Depends(action_logging()),
+        Depends(requires_access_dag(method="DELETE", access_entity=DagAccessEntity.XCOM)),
+    ],
+)
+def delete_xcom_entry(
+    dag_id: str,
+    task_id: str,
+    dag_run_id: str,
+    xcom_key: str,
+    session: SessionDep,
+    map_index: Annotated[int, Query(ge=-1)] = -1,
+):
+    """Delete an XCom entry."""
+    # Check if XCom entry exists
+    query = select(XComModel).where(
+        XComModel.dag_id == dag_id,
+        XComModel.task_id == task_id,
+        XComModel.run_id == dag_run_id,
+        XComModel.key == xcom_key,
+        XComModel.map_index == map_index,
+    )
+    xcom_entry = session.scalar(query)
+
+    if not xcom_entry:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND,
+            f"The XCom with key: `{xcom_key}` with mentioned task instance doesn't exist.",
+        )
+
+    session.delete(xcom_entry)

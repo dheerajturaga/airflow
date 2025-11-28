@@ -3183,6 +3183,16 @@ export type GetXcomEntryData = {
 
 export type GetXcomEntryResponse = XComResponseNative | XComResponseString;
 
+export type DeleteXcomEntryData = {
+    dagId: string;
+    dagRunId: string;
+    mapIndex?: number;
+    taskId: string;
+    xcomKey: string;
+};
+
+export type DeleteXcomEntryResponse = void;
+
 export type UpdateXcomEntryData = {
     dagId: string;
     dagRunId: string;
