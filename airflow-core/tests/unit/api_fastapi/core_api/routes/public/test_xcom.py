@@ -647,6 +647,42 @@ class TestCreateXComEntry(TestXComEndpoint):
         assert response.status_code == 403
 
 
+class TestDeleteXComEntry(TestXComEndpoint):
+    def test_delete_xcom_entry(self, test_client, session):
+        self._create_xcom(TEST_XCOM_KEY, TEST_XCOM_VALUE)
+
+        response = test_client.delete(
+            f"/dags/{TEST_DAG_ID}/dagRuns/{run_id}/taskInstances/{TEST_TASK_ID}/xcomEntries/{TEST_XCOM_KEY}"
+        )
+
+        assert response.status_code == 204
+        check_last_log(session, dag_id=TEST_DAG_ID, event="delete_xcom_entry", logical_date=None)
+
+        # Verify it's gone
+        response = test_client.get(
+            f"/dags/{TEST_DAG_ID}/dagRuns/{run_id}/taskInstances/{TEST_TASK_ID}/xcomEntries/{TEST_XCOM_KEY}"
+        )
+        assert response.status_code == 404
+
+    def test_delete_xcom_entry_not_found(self, test_client):
+        response = test_client.delete(
+            f"/dags/{TEST_DAG_ID}/dagRuns/{run_id}/taskInstances/{TEST_TASK_ID}/xcomEntries/{TEST_XCOM_KEY}"
+        )
+        assert response.status_code == 404
+
+    def test_should_respond_401(self, unauthenticated_test_client):
+        response = unauthenticated_test_client.delete(
+            f"/dags/{TEST_DAG_ID}/dagRuns/{run_id}/taskInstances/{TEST_TASK_ID}/xcomEntries/{TEST_XCOM_KEY}"
+        )
+        assert response.status_code == 401
+
+    def test_should_respond_403(self, unauthorized_test_client):
+        response = unauthorized_test_client.delete(
+            f"/dags/{TEST_DAG_ID}/dagRuns/{run_id}/taskInstances/{TEST_TASK_ID}/xcomEntries/{TEST_XCOM_KEY}"
+        )
+        assert response.status_code == 403
+
+
 class TestPatchXComEntry(TestXComEndpoint):
     @pytest.mark.parametrize(
         ("key", "patch_body", "expected_status", "expected_detail"),
