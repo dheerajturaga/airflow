@@ -292,7 +292,7 @@ export const XCom = () => {
         <Flex gap={2}>
           {isTaskInstancePage ? (
             <Button colorPalette="blue" onClick={onOpenAdd}>
-              <FiPlus /> {translate("xcom.add")}
+              <FiPlus /> {translate("xcom.add.title")}
             </Button>
           ) : undefined}
           <ExpandCollapseButtons
