@@ -20,7 +20,7 @@ import copy
 from typing import Annotated
 
 from fastapi import Depends, HTTPException, Query, status
-from sqlalchemy import and_, select
+from sqlalchemy import and_, delete, select
 from sqlalchemy.orm import joinedload
 
 from airflow.api_fastapi.auth.managers.models.resource_details import DagAccessEntity
@@ -363,20 +363,19 @@ def delete_xcom_entry(
     map_index: Annotated[int, Query(ge=-1)] = -1,
 ):
     """Delete an XCom entry."""
-    # Check if XCom entry exists
-    query = select(XComModel).where(
-        XComModel.dag_id == dag_id,
-        XComModel.task_id == task_id,
-        XComModel.run_id == dag_run_id,
-        XComModel.key == xcom_key,
-        XComModel.map_index == map_index,
+    # Delete XCom entry
+    result = session.execute(
+        delete(XComModel).where(
+            XComModel.dag_id == dag_id,
+            XComModel.task_id == task_id,
+            XComModel.run_id == dag_run_id,
+            XComModel.key == xcom_key,
+            XComModel.map_index == map_index,
+        )
     )
-    xcom_entry = session.scalar(query)
 
-    if not xcom_entry:
+    if result.rowcount == 0:
         raise HTTPException(
             status.HTTP_404_NOT_FOUND,
             f"The XCom with key: `{xcom_key}` with mentioned task instance doesn't exist.",
         )
-
-    session.delete(xcom_entry)

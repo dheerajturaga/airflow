@@ -251,7 +251,7 @@ export const XCom = () => {
       deleteXCom({
         dagId: selectedXCom.dag_id,
         dagRunId: selectedXCom.run_id,
-        mapIndex: selectedXCom.map_index,
+        mapIndex: selectedXCom.map_index ?? -1,
         taskId: selectedXCom.task_id,
         xcomKey: selectedXCom.key,
       });
