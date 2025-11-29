@@ -45,41 +45,6 @@ export class AssetService {
     }
     
     /**
-     * Delete Xcom Entry
-     * Delete an XCom entry.
-     * @param data The data for the request.
-     * @param data.dagId
-     * @param data.dagRunId
-     * @param data.taskId
-     * @param data.xcomKey
-     * @param data.mapIndex
-     * @returns void Successful Response
-     * @throws ApiError
-     */
-    public static deleteXcomEntry(data: DeleteXcomEntryData): CancelablePromise<DeleteXcomEntryResponse> {
-        return __request(OpenAPI, {
-            method: 'DELETE',
-            url: '/api/v2/dags/{dag_id}/dagRuns/{dag_run_id}/taskInstances/{task_id}/xcomEntries/{xcom_key}',
-            path: {
-                dag_id: data.dagId,
-                dag_run_id: data.dagRunId,
-                task_id: data.taskId,
-                xcom_key: data.xcomKey
-            },
-            query: {
-                map_index: data.mapIndex
-            },
-            errors: {
-                400: 'Bad Request',
-                401: 'Unauthorized',
-                403: 'Forbidden',
-                404: 'Not Found',
-                422: 'Validation Error'
-            }
-        });
-    }
-
-    /**
      * Get Asset Aliases
      * Get asset aliases.
      * @param data The data for the request.
@@ -445,6 +410,7 @@ export class AssetService {
             }
         });
     }
+
     
 }
 
@@ -646,6 +612,19 @@ export class BackfillService {
             }
         });
     }
+
+    /**
+     * Delete Xcom Entry
+     * Delete an XCom entry.
+     * @param data The data for the request.
+     * @param data.dagId
+     * @param data.dagRunId
+     * @param data.taskId
+     * @param data.xcomKey
+     * @param data.mapIndex
+     * @returns void Successful Response
+     * @throws ApiError
+     */
     
 }
 
@@ -3277,6 +3256,41 @@ export class XcomService {
      * @returns XComResponseNative Successful Response
      * @throws ApiError
      */
+    /**
+     * Delete Xcom Entry
+     * Delete an XCom entry.
+     * @param data The data for the request.
+     * @param data.dagId
+     * @param data.dagRunId
+     * @param data.taskId
+     * @param data.xcomKey
+     * @param data.mapIndex
+     * @returns void Successful Response
+     * @throws ApiError
+     */
+    public static deleteXcomEntry(data: DeleteXcomEntryData): CancelablePromise<DeleteXcomEntryResponse> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/v2/dags/{dag_id}/dagRuns/{dag_run_id}/taskInstances/{task_id}/xcomEntries/{xcom_key}',
+            path: {
+                dag_id: data.dagId,
+                dag_run_id: data.dagRunId,
+                task_id: data.taskId,
+                xcom_key: data.xcomKey
+            },
+            query: {
+                map_index: data.mapIndex
+            },
+            errors: {
+                400: 'Bad Request',
+                401: 'Unauthorized',
+                403: 'Forbidden',
+                404: 'Not Found',
+                422: 'Validation Error'
+            }
+        });
+    }
+
     public static updateXcomEntry(data: UpdateXcomEntryData): CancelablePromise<UpdateXcomEntryResponse> {
         return __request(OpenAPI, {
             method: 'PATCH',
