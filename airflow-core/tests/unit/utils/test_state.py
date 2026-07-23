@@ -127,6 +127,12 @@ class TestTaskInstanceStates:
         overlap = State.failed_states.intersection(State.success_states)
         assert len(overlap) == 0, f"failed_states and success_states should not overlap, but found: {overlap}"
 
+    def test_bypassed_is_terminal_and_success_like(self):
+        assert TaskInstanceState.BYPASSED in State.finished
+        assert TaskInstanceState.BYPASSED in State.success_states
+        assert TaskInstanceState.BYPASSED not in State.unfinished
+        assert TaskInstanceState.BYPASSED not in State.failed_states
+
     def test_all_terminal_states_are_either_failed_or_success(self):
         """Test that every terminal state (except 'removed') is classified as either failed or success."""
         excluded_states = {"removed"}

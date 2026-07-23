@@ -334,15 +334,21 @@ class TIRetryStatePayload(BaseModel):
     retry_reason: Annotated[str | None, Field(title="Retry Reason")] = None
 
 
+class State(str, Enum):
+    SKIPPED = "skipped"
+    BYPASSED = "bypassed"
+
+
 class TISkippedDownstreamTasksStatePayload(BaseModel):
     """
-    Schema for updating downstream tasks to a skipped state.
+    Schema for updating downstream tasks to a terminal not-run state.
     """
 
     model_config = ConfigDict(
         extra="forbid",
     )
     tasks: Annotated[list[str | tuple[str, int]], Field(title="Tasks")]
+    state: Annotated[State | None, Field(title="State")] = State.SKIPPED
 
 
 class TISuccessStatePayload(BaseModel):
@@ -397,6 +403,7 @@ class TaskInstanceState(str, Enum):
     UP_FOR_RESCHEDULE = "up_for_reschedule"
     UPSTREAM_FAILED = "upstream_failed"
     SKIPPED = "skipped"
+    BYPASSED = "bypassed"
     DEFERRED = "deferred"
     AWAITING_INPUT = "awaiting_input"
 
@@ -577,6 +584,7 @@ class TerminalTIState(str, Enum):
     SUCCESS = "success"
     FAILED = "failed"
     SKIPPED = "skipped"
+    BYPASSED = "bypassed"
     UPSTREAM_FAILED = "upstream_failed"
     REMOVED = "removed"
 

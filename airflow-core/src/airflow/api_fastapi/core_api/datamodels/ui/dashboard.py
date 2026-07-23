@@ -43,6 +43,7 @@ class TaskInstanceStateCount(BaseModel):
     up_for_reschedule: int
     upstream_failed: int
     skipped: int
+    bypassed: int
     deferred: int
     awaiting_input: int
 

@@ -37,8 +37,13 @@ def get_bundle() -> VersionBundle:
     """
     from cadwyn import HeadVersion, Version, VersionBundle
 
+    from airflow.sdk.execution_time.schema.versions.v2026_07_23 import (
+        AddSkipDownstreamTasksStateField,
+    )
+
     return VersionBundle(
         HeadVersion(),
+        Version("2026-07-23", AddSkipDownstreamTasksStateField),
         Version("2026-06-16"),
     )
 

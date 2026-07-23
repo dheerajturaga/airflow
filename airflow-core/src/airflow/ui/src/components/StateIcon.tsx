@@ -17,7 +17,16 @@
  * under the License.
  */
 import type { IconBaseProps } from "react-icons";
-import { FiActivity, FiCalendar, FiRepeat, FiSkipForward, FiSlash, FiWatch, FiX } from "react-icons/fi";
+import {
+  FiActivity,
+  FiCalendar,
+  FiFastForward,
+  FiRepeat,
+  FiSkipForward,
+  FiSlash,
+  FiWatch,
+  FiX,
+} from "react-icons/fi";
 import {
   LuCalendarSync,
   LuCheck,
@@ -40,6 +49,8 @@ export const StateIcon = ({ state, ...rest }: Props) => {
   switch (state) {
     case "awaiting_input":
       return <LuUserRoundPen {...rest} />;
+    case "bypassed":
+      return <FiFastForward {...rest} />;
     case "deferred":
       return <FiWatch {...rest} />;
     case "failed":

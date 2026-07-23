@@ -1403,6 +1403,7 @@ class TestTaskInstance:
         [
             (State.SUCCESS, True),
             (State.SKIPPED, True),
+            (State.BYPASSED, True),
             (State.RUNNING, False),
             (State.FAILED, False),
             (State.NONE, False),

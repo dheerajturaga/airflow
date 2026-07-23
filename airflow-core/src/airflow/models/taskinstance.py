@@ -1061,7 +1061,9 @@ class TaskInstance(Base, LoggingMixin, BaseWorkload):
             TaskInstance.dag_id == self.dag_id,
             TaskInstance.task_id.in_(task.downstream_task_ids),
             TaskInstance.run_id == self.run_id,
-            TaskInstance.state.in_((TaskInstanceState.SKIPPED, TaskInstanceState.SUCCESS)),
+            TaskInstance.state.in_(
+                (TaskInstanceState.SKIPPED, TaskInstanceState.BYPASSED, TaskInstanceState.SUCCESS)
+            ),
         )
         count = session.scalar(ti)
         return count == len(task.downstream_task_ids)

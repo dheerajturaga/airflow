@@ -53,6 +53,7 @@ from airflow.sdk.api.datamodels._generated import (
     AssetProfile,
     DagRun,
     PreviousTIResponse,
+    State as DownstreamTaskState,
     TaskInstance,
     TaskInstanceState,
     TIRunContext,
@@ -1617,9 +1618,10 @@ def run(
         msg, state = _handle_current_task_success(context, ti)
     except DownstreamTasksSkipped as skip:
         log.info("::group::Post Execute")
-        log.info("Skipping downstream tasks.")
+        downstream_state = DownstreamTaskState(getattr(skip, "downstream_state", "skipped"))
+        log.info("Updating downstream task states.", state=downstream_state)
         tasks_to_skip = skip.tasks if isinstance(skip.tasks, list) else [skip.tasks]
-        SUPERVISOR_COMMS.send(msg=SkipDownstreamTasks(tasks=tasks_to_skip))
+        SUPERVISOR_COMMS.send(msg=SkipDownstreamTasks(tasks=tasks_to_skip, state=downstream_state))
         msg, state = _handle_current_task_success(context, ti)
     except DagRunTriggerException as drte:
         log.info("::group::Post Execute")

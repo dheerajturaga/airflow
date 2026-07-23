@@ -52,8 +52,8 @@ from airflow.models.xcom import XComModel
 from airflow.providers.standard.operators.empty import EmptyOperator
 from airflow.providers.standard.operators.manual import ManualGateOperator
 from airflow.sdk import BaseOperator
-from airflow.sdk.bases.skipmixin import XCOM_SKIPMIXIN_KEY, XCOM_SKIPMIXIN_SKIPPED
 from airflow.state.metastore import MetastoreBackend
+from airflow.ti_deps.deps.not_previously_skipped_dep import XCOM_SKIPMIXIN_KEY
 from airflow.utils.platform import getuser
 from airflow.utils.state import DagRunState, State, TaskInstanceState
 from airflow.utils.types import DagRunType
@@ -4374,18 +4374,10 @@ class TestPostRunManualSection(TestTaskInstanceEndpoint):
         dag_run = dag_maker.create_dagrun(run_id=self.RUN_ID, state=DagRunState.SUCCESS)
         for task_id, state in {
             "manual_gate": gate_state,
-            "optional_step": TaskInstanceState.SKIPPED,
-            "join": TaskInstanceState.SKIPPED,
+            "optional_step": TaskInstanceState.BYPASSED,
+            "join": TaskInstanceState.BYPASSED,
         }.items():
             self._get_ti(session, task_id).state = state
-        XComModel.set(
-            key=XCOM_SKIPMIXIN_KEY,
-            value={XCOM_SKIPMIXIN_SKIPPED: ["optional_step", "join"]},
-            dag_id=self.DAG_ID,
-            task_id="manual_gate",
-            run_id=self.RUN_ID,
-            session=session,
-        )
         session.commit()
         return dag_run
 
@@ -4402,9 +4394,9 @@ class TestPostRunManualSection(TestTaskInstanceEndpoint):
         assert body["total_entries"] == 2
         assert {ti["task_id"] for ti in body["task_instances"]} == {"optional_step", "join"}
         assert self._get_ti(session, "manual_gate").state == TaskInstanceState.SUCCESS
-        assert self._get_ti(session, "optional_step").state == TaskInstanceState.SKIPPED
-        assert self._get_ti(session, "join").state == TaskInstanceState.SKIPPED
-        assert self._get_manual_gate_skip_xcom(session) is not None
+        assert self._get_ti(session, "optional_step").state == TaskInstanceState.BYPASSED
+        assert self._get_ti(session, "join").state == TaskInstanceState.BYPASSED
+        assert self._get_manual_gate_skip_xcom(session) is None
 
     def test_run_manual_section_clears_downstream_tasks_and_queues_dag_run(
         self, test_client, session, dag_maker

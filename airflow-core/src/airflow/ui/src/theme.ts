@@ -411,6 +411,7 @@ const defaultAirflowTheme: ThemingConfig = {
       failed: generateSemanticTokens("red"),
       queued: generateSemanticTokens("stone"),
       skipped: generateSemanticTokens("pink"),
+      bypassed: generateSemanticTokens("sky"),
       up_for_reschedule: generateSemanticTokens("sky"),
       up_for_retry: generateSemanticTokens("yellow"),
       upstream_failed: generateSemanticTokens("amber"),

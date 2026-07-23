@@ -809,7 +809,11 @@ def ti_skip_downstream(
     session: SessionDep,
 ):
     bind_contextvars(ti_id=str(task_instance_id))
-    log.info("Skipping downstream tasks", task_count=len(ti_patch_payload.tasks))
+    log.info(
+        "Updating downstream task states",
+        task_count=len(ti_patch_payload.tasks),
+        state=ti_patch_payload.state,
+    )
 
     now = timezone.utcnow()
     tasks = ti_patch_payload.tasks
@@ -825,7 +829,7 @@ def ti_skip_downstream(
     log.debug("Retrieved DAG and run info", dag_id=dag_id, run_id=run_id)
 
     task_ids = [task if isinstance(task, tuple) else (task, -1) for task in tasks]
-    log.debug("Prepared task IDs for skipping", task_ids=task_ids)
+    log.debug("Prepared downstream task IDs for state update", task_ids=task_ids)
 
     # Don't overwrite tasks that are already executing or finished.
     # See: https://github.com/apache/airflow/issues/59378
@@ -848,12 +852,16 @@ def ti_skip_downstream(
             tuple_(TI.task_id, TI.map_index).in_(task_ids),
             skippable_state_clause,
         )
-        .values(state=TaskInstanceState.SKIPPED, start_date=now, end_date=now)
+        .values(state=ti_patch_payload.state, start_date=now, end_date=now)
         .execution_options(synchronize_session=False)
     )
 
     result = session.execute(query)
-    log.info("Downstream tasks skipped", tasks_skipped=getattr(result, "rowcount", 0))
+    log.info(
+        "Downstream task states updated",
+        tasks_updated=getattr(result, "rowcount", 0),
+        state=ti_patch_payload.state,
+    )
 
 
 def _raise_ti_not_in_live_table(task_instance_id: UUID, session: SessionDep) -> NoReturn:

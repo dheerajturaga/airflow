@@ -81,13 +81,14 @@ class _UpstreamTIStates(NamedTuple):
                 setup_counter.update(curr_state)
         return _UpstreamTIStates(
             success=counter.get(TaskInstanceState.SUCCESS, 0),
-            skipped=counter.get(TaskInstanceState.SKIPPED, 0),
+            skipped=counter.get(TaskInstanceState.SKIPPED, 0) + counter.get(TaskInstanceState.BYPASSED, 0),
             failed=counter.get(TaskInstanceState.FAILED, 0),
             upstream_failed=counter.get(TaskInstanceState.UPSTREAM_FAILED, 0),
             removed=counter.get(TaskInstanceState.REMOVED, 0),
             done=sum(counter.values()),
             success_setup=setup_counter.get(TaskInstanceState.SUCCESS, 0),
-            skipped_setup=setup_counter.get(TaskInstanceState.SKIPPED, 0),
+            skipped_setup=setup_counter.get(TaskInstanceState.SKIPPED, 0)
+            + setup_counter.get(TaskInstanceState.BYPASSED, 0),
         )
 
 

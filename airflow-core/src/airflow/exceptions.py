@@ -342,6 +342,7 @@ _DEPRECATED_EXCEPTIONS = {
     "AirflowTaskTerminated",
     "AirflowTaskTimeout",
     "DagRunTriggerException",
+    "DownstreamTasksBypassed",
     "DownstreamTasksSkipped",
     "DuplicateTaskIdFound",
     "FailFastDagInvalidTriggerRule",

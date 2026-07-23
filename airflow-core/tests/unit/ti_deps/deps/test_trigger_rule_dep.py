@@ -1408,6 +1408,10 @@ class TestTriggerRuleDep:
         assert _UpstreamTIStates.calculate(_get_finished_tis("op4")) == (1, 0, 1, 0, 0, 2, 0, 0)
         assert _UpstreamTIStates.calculate(_get_finished_tis("op5")) == (2, 0, 1, 0, 0, 3, 0, 0)
 
+        tis["op3"].state = TaskInstanceState.BYPASSED
+        assert _UpstreamTIStates.calculate(_get_finished_tis("op4")) == (0, 1, 1, 0, 0, 2, 0, 0)
+        tis["op3"].state = SUCCESS
+
         dr.update_state(session=session)
         assert dr.state == DagRunState.SUCCESS
 

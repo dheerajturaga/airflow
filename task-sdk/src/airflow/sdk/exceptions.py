@@ -340,6 +340,20 @@ class DownstreamTasksSkipped(AirflowException):
     def __init__(self, *, tasks):
         super().__init__()
         self.tasks = tasks
+        self.downstream_state = "skipped"
+
+
+class DownstreamTasksBypassed(DownstreamTasksSkipped):
+    """
+    Signal by an operator to mark its downstream tasks as bypassed.
+
+    Special exception raised to signal that the operator it was raised from wishes to mark
+    downstream tasks as intentionally not run while allowing them to be triggered manually later.
+    """
+
+    def __init__(self, *, tasks):
+        super().__init__(tasks=tasks)
+        self.downstream_state = "bypassed"
 
 
 class XComNotFound(AirflowException):

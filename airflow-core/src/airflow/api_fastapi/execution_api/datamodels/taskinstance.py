@@ -216,9 +216,10 @@ class TIRetryStatePayload(StrictBaseModel):
 
 
 class TISkippedDownstreamTasksStatePayload(StrictBaseModel):
-    """Schema for updating downstream tasks to a skipped state."""
+    """Schema for updating downstream tasks to a terminal not-run state."""
 
     tasks: list[str | tuple[str, int]]
+    state: Literal[TIState.SKIPPED, TIState.BYPASSED] = TIState.SKIPPED
 
 
 def ti_state_discriminator(v: dict[str, str] | StrictBaseModel) -> str:

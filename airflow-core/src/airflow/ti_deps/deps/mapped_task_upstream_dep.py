@@ -102,7 +102,9 @@ class MappedTaskUpstreamDep(BaseTIDep):
                 or TaskInstanceState.UPSTREAM_FAILED in finished_states
             ):
                 new_state = TaskInstanceState.UPSTREAM_FAILED
-            elif TaskInstanceState.SKIPPED in finished_states:
+            elif (
+                TaskInstanceState.SKIPPED in finished_states or TaskInstanceState.BYPASSED in finished_states
+            ):
                 new_state = TaskInstanceState.SKIPPED
             if new_state is not None and ti.set_state(new_state, session=session):
                 dep_context.have_changed_ti_states = True

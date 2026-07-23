@@ -36,6 +36,7 @@ export const taskInstanceStateOptions = createListCollection<{
     { label: "common:states.up_for_reschedule", value: "up_for_reschedule" },
     { label: "common:states.upstream_failed", value: "upstream_failed" },
     { label: "common:states.skipped", value: "skipped" },
+    { label: "common:states.bypassed", value: "bypassed" },
     { label: "common:states.deferred", value: "deferred" },
     { label: "common:states.awaiting_input", value: "awaiting_input" },
     { label: "common:states.removed", value: "removed" },

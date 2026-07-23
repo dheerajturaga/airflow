@@ -61,23 +61,23 @@ class TestManualGateOperator:
                 True,
                 TriggerRule.ALL_SUCCESS,
                 {"optional_step", "join"},
-                {"manual_gate": State.SUCCESS, "optional_step": State.SKIPPED, "join": State.SKIPPED},
+                {"manual_gate": State.SUCCESS, "optional_step": State.BYPASSED, "join": State.BYPASSED},
             ),
             (
                 False,
                 TriggerRule.ALL_SUCCESS,
                 {"optional_step"},
-                {"manual_gate": State.SUCCESS, "optional_step": State.SKIPPED, "join": State.NONE},
+                {"manual_gate": State.SUCCESS, "optional_step": State.BYPASSED, "join": State.NONE},
             ),
             (
                 False,
                 TriggerRule.ALL_DONE,
                 {"optional_step"},
-                {"manual_gate": State.SUCCESS, "optional_step": State.SKIPPED, "join": State.SUCCESS},
+                {"manual_gate": State.SUCCESS, "optional_step": State.BYPASSED, "join": State.SUCCESS},
             ),
         ],
     )
-    def test_manual_gate_skips_optional_section(
+    def test_manual_gate_bypasses_optional_section(
         self,
         ignore_downstream_trigger_rules,
         join_trigger_rule,
@@ -113,7 +113,7 @@ class TestManualGateOperator:
             assert manual_gate.ignore_downstream_trigger_rules == ignore_downstream_trigger_rules
             self.assert_expected_task_states(dag_run, expected_task_states)
 
-    def test_manual_gate_stores_skipped_tasks_for_clear_semantics(self):
+    def test_manual_gate_does_not_store_skipmixin_xcom(self):
         with self.dag_maker("manual_gate_xcom_test", start_date=DEFAULT_DATE, serialized=True):
             manual_gate = ManualGateOperator(task_id="manual_gate")
             optional_step = EmptyOperator(task_id="optional_step")
@@ -130,9 +130,7 @@ class TestManualGateOperator:
         task_instances = dag_run.get_task_instances()
         gate_ti = next(ti for ti in task_instances if ti.task_id == "manual_gate")
 
-        assert gate_ti.xcom_pull(task_ids=manual_gate.task_id, key="skipmixin_key") == {
-            "skipped": ["optional_step"]
-        }
+        assert gate_ti.xcom_pull(task_ids=manual_gate.task_id, key="skipmixin_key") is None
 
     def test_manual_gate_uses_label_or_task_identity(self):
         labeled_gate = ManualGateOperator(task_id="manual_gate", label="Run optional section")
@@ -149,4 +147,4 @@ class TestManualGateOperator:
 
         result = manual_gate.execute({})
 
-        assert result == {"label": "manual_gate", "skipped_task_ids": []}
+        assert result == {"label": "manual_gate", "bypassed_task_ids": []}

@@ -2469,8 +2469,17 @@ class TestTISkipDownstream:
     def teardown_method(self):
         clear_db_runs()
 
-    @pytest.mark.parametrize("_json", (({"tasks": ["t1"]}), ({"tasks": [("t1", -1)]})))
-    def test_ti_skip_downstream(self, client, session, create_task_instance, dag_maker, _json):
+    @pytest.mark.parametrize(
+        ("_json", "expected_state"),
+        (
+            ({"tasks": ["t1"]}, State.SKIPPED),
+            ({"tasks": [("t1", -1)]}, State.SKIPPED),
+            ({"tasks": ["t1"], "state": "bypassed"}, State.BYPASSED),
+        ),
+    )
+    def test_ti_skip_downstream(
+        self, client, session, create_task_instance, dag_maker, _json, expected_state
+    ):
         with dag_maker("skip_downstream_dag", session=session):
             t0 = EmptyOperator(task_id="t0")
             t1 = EmptyOperator(task_id="t1")
@@ -2487,7 +2496,7 @@ class TestTISkipDownstream:
         ti1 = dr.get_task_instance("t1")
 
         assert response.status_code == 204
-        assert ti1.state == State.SKIPPED
+        assert ti1.state == expected_state
 
 
 class TestTISkipDownstreamRaceCondition:

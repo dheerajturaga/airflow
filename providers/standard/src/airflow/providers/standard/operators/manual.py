@@ -23,6 +23,9 @@ from typing import TYPE_CHECKING
 from airflow.providers.common.compat.sdk import SkipMixin
 from airflow.providers.standard.version_compat import AIRFLOW_V_3_0_PLUS, BaseOperator
 
+if AIRFLOW_V_3_0_PLUS:
+    from airflow.providers.common.compat.sdk import DownstreamTasksBypassed
+
 if TYPE_CHECKING:
     from airflow.providers.common.compat.sdk import Context
     from airflow.sdk.definitions._internal.node import DAGNode
@@ -30,20 +33,20 @@ if TYPE_CHECKING:
 
 class ManualGateOperator(BaseOperator, SkipMixin):
     """
-    Skip an optional subsection by default so it can be run manually later.
+    Bypass an optional subsection by default so it can be run manually later.
 
     A manual gate marks downstream work as optional for normal Dag runs. When the gate runs, it succeeds
-    and skips downstream tasks according to ``ignore_downstream_trigger_rules``. This keeps the Dag run from
+    and bypasses downstream tasks according to ``ignore_downstream_trigger_rules``. This keeps the Dag run from
     waiting on optional work while preserving the graph structure for future manual execution tooling.
 
     :param label: Human-readable label for UI/API surfaces. Defaults to ``task_display_name`` or
         ``task_id`` when not provided.
     :param ignore_downstream_trigger_rules: If set to True, all downstream tasks from this operator task
-        will be skipped. This is the default behavior. If set to False, only direct downstream tasks are
-        skipped and trigger rules on later descendants are respected.
+        will be bypassed. This is the default behavior. If set to False, only direct downstream tasks are
+        bypassed and trigger rules on later descendants are respected.
     """
 
-    inherits_from_skipmixin = True
+    inherits_from_skipmixin = not AIRFLOW_V_3_0_PLUS
     ui_color = "#e2e8f0"
     ui_fgcolor = "#1f2937"
 
@@ -77,27 +80,27 @@ class ManualGateOperator(BaseOperator, SkipMixin):
 
     def execute(self, context: Context) -> dict[str, str | list[str]]:
         if not self.downstream_task_ids:
-            self.log.info("No downstream tasks; nothing to skip.")
-            return {"label": self.manual_gate_label, "skipped_task_ids": []}
+            self.log.info("No downstream tasks; nothing to bypass.")
+            return {"label": self.manual_gate_label, "bypassed_task_ids": []}
 
         tasks_to_skip = list(self._get_tasks_to_skip(context))
 
         if self.log.getEffectiveLevel() <= logging.DEBUG:
             self.log.debug("Manual gate downstream task IDs %s", tasks_to_skip)
 
-        self.log.info("Skipping manual gate downstream tasks.")
+        self.log.info("Bypassing manual gate downstream tasks.")
         if AIRFLOW_V_3_0_PLUS:
-            self.skip(ti=context["ti"], tasks=tasks_to_skip)
-        else:
-            dag_run = context["dag_run"]
-            self.skip(
-                dag_run=dag_run,
-                tasks=tasks_to_skip,
-                execution_date=dag_run.logical_date,
-                map_index=context["ti"].map_index,
-            )
+            raise DownstreamTasksBypassed(tasks=[task.task_id for task in tasks_to_skip])
+
+        dag_run = context["dag_run"]
+        self.skip(
+            dag_run=dag_run,
+            tasks=tasks_to_skip,
+            execution_date=dag_run.logical_date,
+            map_index=context["ti"].map_index,
+        )
 
         return {
             "label": self.manual_gate_label,
-            "skipped_task_ids": sorted(task.task_id for task in tasks_to_skip),
+            "bypassed_task_ids": sorted(task.task_id for task in tasks_to_skip),
         }

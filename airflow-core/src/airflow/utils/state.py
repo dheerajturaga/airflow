@@ -40,6 +40,7 @@ class TerminalTIState(str, Enum):
     SUCCESS = "success"
     FAILED = "failed"
     SKIPPED = "skipped"  # A user can raise a AirflowSkipException from a task & it will be marked as skipped
+    BYPASSED = "bypassed"  # Intentionally not run, for optional work that can be triggered later
     UPSTREAM_FAILED = "upstream_failed"
     REMOVED = "removed"
 
@@ -87,6 +88,7 @@ class TaskInstanceState(str, Enum):
     UP_FOR_RESCHEDULE = IntermediateTIState.UP_FOR_RESCHEDULE  # A waiting `reschedule` sensor
     UPSTREAM_FAILED = TerminalTIState.UPSTREAM_FAILED  # One or more upstream deps failed
     SKIPPED = TerminalTIState.SKIPPED  # Skipped by branching or some other mechanism
+    BYPASSED = TerminalTIState.BYPASSED  # Intentionally not run, but can be manually triggered later
     DEFERRED = IntermediateTIState.DEFERRED  # Deferrable operator waiting on a trigger
     AWAITING_INPUT = IntermediateTIState.AWAITING_INPUT  # Parked waiting for human input (HITL)
 
@@ -131,6 +133,7 @@ class State:
     UP_FOR_RESCHEDULE = TaskInstanceState.UP_FOR_RESCHEDULE
     UPSTREAM_FAILED = TaskInstanceState.UPSTREAM_FAILED
     SKIPPED = TaskInstanceState.SKIPPED
+    BYPASSED = TaskInstanceState.BYPASSED
     DEFERRED = TaskInstanceState.DEFERRED
     AWAITING_INPUT = TaskInstanceState.AWAITING_INPUT
 
@@ -157,6 +160,7 @@ class State:
         TaskInstanceState.UP_FOR_RESCHEDULE: "turquoise",
         TaskInstanceState.UPSTREAM_FAILED: "orange",
         TaskInstanceState.SKIPPED: "hotpink",
+        TaskInstanceState.BYPASSED: "deepskyblue",
         TaskInstanceState.REMOVED: "lightgrey",
         TaskInstanceState.SCHEDULED: "tan",
         TaskInstanceState.DEFERRED: "mediumpurple",
@@ -181,6 +185,7 @@ class State:
             TaskInstanceState.SUCCESS,
             TaskInstanceState.FAILED,
             TaskInstanceState.SKIPPED,
+            TaskInstanceState.BYPASSED,
             TaskInstanceState.UPSTREAM_FAILED,
             TaskInstanceState.REMOVED,
         ]
@@ -220,7 +225,7 @@ class State:
     """
 
     success_states: frozenset[TaskInstanceState] = frozenset(
-        [TaskInstanceState.SUCCESS, TaskInstanceState.SKIPPED]
+        [TaskInstanceState.SUCCESS, TaskInstanceState.SKIPPED, TaskInstanceState.BYPASSED]
     )
     """
     A list of states indicating that a task or dag is a success state.

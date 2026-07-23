@@ -1044,6 +1044,7 @@ class TaskInstanceState(str, Enum):
     UP_FOR_RESCHEDULE = "up_for_reschedule"
     UPSTREAM_FAILED = "upstream_failed"
     SKIPPED = "skipped"
+    BYPASSED = "bypassed"
     DEFERRED = "deferred"
     AWAITING_INPUT = "awaiting_input"
 

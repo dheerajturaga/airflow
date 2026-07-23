@@ -23,11 +23,11 @@ ManualGateOperator
 Use the :class:`~airflow.providers.standard.operators.manual.ManualGateOperator` to mark downstream work as
 optional for normal Dag runs.
 
-When the gate runs, it succeeds and skips its downstream tasks by default. This lets the Dag run finish
+When the gate runs, it succeeds and bypasses its downstream tasks by default. This lets the Dag run finish
 without waiting for optional work. Future UI/API support can use the gate metadata to run the optional
 section manually for a selected Dag run.
 
-By default, the operator skips all descendants. Set ``ignore_downstream_trigger_rules=False`` to skip only
+By default, the operator bypasses all descendants. Set ``ignore_downstream_trigger_rules=False`` to bypass only
 direct downstream tasks and let later descendants follow their own trigger rules.
 
 .. exampleinclude:: /../src/airflow/providers/standard/example_dags/example_manual_gate_operator.py

@@ -272,7 +272,12 @@ class PatchTaskInstanceBody(StrictBaseModel):
         """Validate new_state."""
         valid_states = [
             vs.name.lower()
-            for vs in (TaskInstanceState.SUCCESS, TaskInstanceState.FAILED, TaskInstanceState.SKIPPED)
+            for vs in (
+                TaskInstanceState.SUCCESS,
+                TaskInstanceState.FAILED,
+                TaskInstanceState.SKIPPED,
+                TaskInstanceState.BYPASSED,
+            )
         ]
         if ns is None:
             raise ValueError("'new_state' should not be empty")

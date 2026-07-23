@@ -327,7 +327,7 @@ class TaskInstanceOperations:
 
     def skip_downstream_tasks(self, id: uuid.UUID, msg: SkipDownstreamTasks):
         """Tell the API server to skip the downstream tasks of this TI."""
-        body = TISkippedDownstreamTasksStatePayload(tasks=msg.tasks)
+        body = TISkippedDownstreamTasksStatePayload(tasks=msg.tasks, state=msg.state)
         self.client.patch(f"task-instances/{id}/skip-downstream", content=body.model_dump_json())
 
     def set_rtif(self, id: uuid.UUID, body: dict[str, str]) -> OKResponse:

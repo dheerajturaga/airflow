@@ -114,6 +114,7 @@ if TYPE_CHECKING:
     if AIRFLOW_V_3_0_PLUS:
         from airflow.sdk.exceptions import (
             DagRunTriggerException as DagRunTriggerException,
+            DownstreamTasksBypassed as DownstreamTasksBypassed,
             DownstreamTasksSkipped as DownstreamTasksSkipped,
         )
     from airflow.sdk.execution_time.context import (
@@ -311,6 +312,7 @@ _IMPORT_MAP: dict[str, str | tuple[str, ...]] = {
 
 # Airflow 3-only exceptions (not available in Airflow 2)
 _AIRFLOW_3_ONLY_EXCEPTIONS: dict[str, tuple[str, ...]] = {
+    "DownstreamTasksBypassed": ("airflow.sdk.exceptions", "airflow.exceptions"),
     "DownstreamTasksSkipped": ("airflow.sdk.exceptions", "airflow.exceptions"),
     "DagRunTriggerException": ("airflow.sdk.exceptions", "airflow.exceptions"),
 }

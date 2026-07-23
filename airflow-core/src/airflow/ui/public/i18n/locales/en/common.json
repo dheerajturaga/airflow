@@ -299,6 +299,7 @@
   "state": "State",
   "states": {
     "awaiting_input": "Awaiting Input",
+    "bypassed": "Bypassed",
     "deferred": "Deferred",
     "failed": "Failed",
     "no_status": "No Status",

@@ -128,11 +128,29 @@ class CodeFormatter(CustomCodeFormatter):
                 new_annotation = updated_node.annotation.visit(TasksReplacer())
                 return updated_node.with_changes(annotation=new_annotation)
 
+        class ModifySkippedDownstreamStateDefault(cst.CSTTransformer):
+            def leave_AnnAssign(
+                self, original_node: cst.AnnAssign, updated_node: cst.AnnAssign
+            ) -> cst.AnnAssign:
+                if not isinstance(updated_node.target, cst.Name) or updated_node.target.value != "state":
+                    return updated_node
+
+                if (
+                    not isinstance(updated_node.value, cst.SimpleString)
+                    or updated_node.value.value != '"skipped"'
+                ):
+                    return updated_node
+
+                return updated_node.with_changes(
+                    value=cst.Attribute(value=cst.Name("State"), attr=cst.Name("SKIPPED"))
+                )
+
         source_tree = cst.parse_module(code)
         modified_tree = source_tree.visit(JsonValueNodeRemover())
         if api_version := self.formatter_kwargs.get("api_version"):
             modified_tree = modified_tree.visit(VersionConstInjtector(api_version))
         modified_tree = modified_tree.visit(ModifyTasksAnnotation())
+        modified_tree = modified_tree.visit(ModifySkippedDownstreamStateDefault())
         code = modified_tree.code
 
         result = subprocess.check_output(

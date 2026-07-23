@@ -31,6 +31,7 @@ from airflow.api_fastapi.execution_api.datamodels.taskinstance import (
     TIAwaitingInputStatePayload,
     TIRetryStatePayload,
     TIRunContext,
+    TISkippedDownstreamTasksStatePayload,
 )
 
 
@@ -83,6 +84,16 @@ class AddRetryPolicyFields(VersionChange):
     instructions_to_migrate_to_previous_version = (
         schema(TIRetryStatePayload).field("retry_delay_seconds").didnt_exist,
         schema(TIRetryStatePayload).field("retry_reason").didnt_exist,
+    )
+
+
+class AddDownstreamTasksStateField(VersionChange):
+    """Add the state field to TISkippedDownstreamTasksStatePayload for terminal not-run states."""
+
+    description = __doc__
+
+    instructions_to_migrate_to_previous_version = (
+        schema(TISkippedDownstreamTasksStatePayload).field("state").didnt_exist,
     )
 
 

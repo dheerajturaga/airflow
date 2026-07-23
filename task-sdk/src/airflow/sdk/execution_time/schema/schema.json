@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "api_version": "2026-06-16",
+  "api_version": "2026-07-23",
   "description": "Apache Airflow SDK Supervisor Schema",
   "$defs": {
     "AssetAliasReferenceAssetEventDagRun": {
@@ -3739,7 +3739,7 @@
     },
     "SkipDownstreamTasks": {
       "additionalProperties": false,
-      "description": "Update state of downstream tasks within a task instance to 'skipped', while updating current task to success state.",
+      "description": "Update state of downstream tasks to a terminal not-run state, while updating current task to success state.",
       "properties": {
         "tasks": {
           "items": {
@@ -3764,6 +3764,18 @@
           },
           "title": "Tasks",
           "type": "array"
+        },
+        "state": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/State"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": "skipped",
+          "title": "State"
         },
         "type": {
           "const": "SkipDownstreamTasks",
@@ -3819,6 +3831,14 @@
       ],
       "title": "StartupDetails",
       "type": "object"
+    },
+    "State": {
+      "enum": [
+        "skipped",
+        "bypassed"
+      ],
+      "title": "State",
+      "type": "string"
     },
     "SucceedTask": {
       "additionalProperties": false,
@@ -4043,6 +4063,7 @@
         "up_for_reschedule",
         "upstream_failed",
         "skipped",
+        "bypassed",
         "deferred",
         "awaiting_input"
       ],
