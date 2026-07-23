@@ -949,6 +949,40 @@ class TestGetGridDataEndpoint:
         actual = sort_dict(actual)
         assert actual == expected
 
+    def test_grid_ti_summaries_bypassed(self, session, test_client, dag_maker):
+        dag_id = "bypassed_grid_dag"
+        run_id = "bypassed_run"
+        logical_date = timezone.datetime(2025, 1, 1)
+        triggered_by_kwargs = {"triggered_by": DagRunTriggeredByType.TEST}
+        with dag_maker(dag_id=dag_id, serialized=True, session=session) as dag:
+            EmptyOperator(task_id="manual_gate")
+            with TaskGroup(group_id="optional"):
+                EmptyOperator(task_id="work")
+
+        data_interval = dag.timetable.infer_manual_data_interval(run_after=logical_date)
+        dag_run = dag_maker.create_dagrun(
+            run_id=run_id,
+            state=DagRunState.SUCCESS,
+            run_type=DagRunType.MANUAL,
+            logical_date=logical_date,
+            data_interval=data_interval,
+            **triggered_by_kwargs,
+        )
+        for ti in dag_run.task_instances:
+            ti.state = (
+                TaskInstanceState.BYPASSED if ti.task_id == "optional.work" else TaskInstanceState.SUCCESS
+            )
+        session.commit()
+
+        response = test_client.get(f"/grid/ti_summaries/{dag_id}?run_ids={run_id}")
+
+        assert response.status_code == 200
+        [data] = self._parse_ndjson(response)
+        task_instances = {ti["task_id"]: ti for ti in data["task_instances"]}
+        assert task_instances["optional.work"]["state"] == "bypassed"
+        assert task_instances["optional"]["state"] == "bypassed"
+        assert task_instances["optional"]["child_states"] == {"bypassed": 1}
+
     def test_structure_includes_historical_removed_task_with_proper_shape(self, session, test_client):
         # Ensure the structure endpoint returns synthetic node for historical/removed task
 

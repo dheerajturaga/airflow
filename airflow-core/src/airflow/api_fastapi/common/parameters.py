@@ -1902,6 +1902,7 @@ state_priority: list[None | TaskInstanceState] = [
     None,
     TaskInstanceState.SUCCESS,
     TaskInstanceState.SKIPPED,
+    TaskInstanceState.BYPASSED,
     TaskInstanceState.REMOVED,
 ]
 
