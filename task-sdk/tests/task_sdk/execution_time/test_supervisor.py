@@ -992,6 +992,42 @@ class TestWatchedSubprocess:
                 target=subprocess_main,
             )
 
+    def test_start_failure_is_logged_before_killing_subprocess(self, captured_logs):
+        """Test that failures while starting a task are written to the task log."""
+        ti_id = uuid7()
+        client = MagicMock(spec=sdk_client.Client)
+        client.task_instances.start.side_effect = ValueError("response shape mismatch")
+
+        def subprocess_main():
+            # Ensure we follow the "protocol" and get the startup message before doing anything else
+            CommsDecoder()._get_response()
+
+        with pytest.raises(ValueError, match="response shape mismatch"):
+            ActivitySubprocess.start(
+                dag_rel_path=os.devnull,
+                bundle_info=FAKE_BUNDLE,
+                what=TaskInstance(
+                    id=ti_id,
+                    task_id="b",
+                    dag_id="c",
+                    run_id="d",
+                    try_number=1,
+                    dag_version_id=uuid7(),
+                    queue="default",
+                ),
+                client=client,
+                target=subprocess_main,
+            )
+
+        startup_error = next(
+            log
+            for log in captured_logs
+            if log.get("event") == "Failed to start task instance on the API server; terminating subprocess"
+        )
+        assert startup_error["error"] == "response shape mismatch"
+        assert startup_error["level"] == "error"
+        assert startup_error["logger"] == "task"
+
     @pytest.mark.parametrize("captured_logs", [logging.WARNING], indirect=True)
     def test_heartbeat_failures_handling(self, monkeypatch, mocker, captured_logs, time_machine):
         """

@@ -1451,8 +1451,11 @@ class ActivitySubprocess(WatchedSubprocess):
             ti_context = self.client.task_instances.start(ti.id, self.pid, datetime.now(tz=timezone.utc))
             self._should_retry = ti_context.should_retry
             self._last_successful_heartbeat = time.monotonic()
-        except Exception:
-            # On any error kill that subprocess!
+        except Exception as e:
+            self.process_log.error(
+                "Failed to start task instance on the API server; terminating subprocess",
+                error=str(e),
+            )
             self.kill(signal.SIGKILL)
             raise
 
